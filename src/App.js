@@ -11,7 +11,13 @@ class App extends Component {
     this.state = {
       persons: [],
       addInput: '',
-      updateInput: ''
+      updateInput: '',
+      newPerson : {
+        id: 1,
+        name: '',
+        completed: false,
+        updateInput: ''
+      }
     }
   }
 
@@ -41,10 +47,6 @@ class App extends Component {
   );
   }
 
-  componentDidUpdate() {
-
-  }
-
   addPerson = (e, id) => {
     this.setState({
       addInput: e.target.value
@@ -59,6 +61,7 @@ class App extends Component {
     }
     person.push(newPerson);
     this.setState({
+      newPerson: newPerson,
       persons: person
     });
   }
@@ -133,17 +136,10 @@ class App extends Component {
     this.setState({
       addInput: ''
     });
-    let val;
     const todo = {perosns: this.state.persons}
-    axios.post('/add.json',this.state.persons).then(res => {
-      let val = res.data.name
-      console.log('post', res.data.name);
-      axios.get('/add.json',todo).then(res => {
-        var len = res.data[val].length;
-        var data = res.data[val][len-1];
-        axios.post('/initial.json', data);
-      }).catch(err => console.log(err));
-    }).catch(err => console.log(err));
+    if(this.state.newPerson.name!==''){
+      axios.post('/initial.json', this.state.newPerson);
+    }
   }
   checkComplete = (event, id) => {
     console.log('checked', id);
@@ -159,7 +155,7 @@ class App extends Component {
             }
             console.log(keyValue);
             var PersonChecked;
-            const personChecked = persons.filter(p => {
+             persons.forEach(p => {
               if (p.id == id) {
                 PersonChecked = p.completed
                 return p.completed;
@@ -185,25 +181,28 @@ class App extends Component {
 
     const persons = this.state.persons.length != 0? this.state.persons.map(person => {
       return (
-        <div>
-          <h1> hii this is {person.name} </h1>
+        <div style= {{margin: 20}}>
+          <li> {person.name} </li>
           <button type='Success' onClick={(event) => this.deleteHandler(event, person.id)}>Delete</button>
+          <input onChange={(event) => this.updatePerson(event, person.id)} value={person.updateInput} />
+          <button type='Success' onClick={(event) => this.updateHandler(event, person.id)}>Update</button>
           <input
                             type="checkbox"
                             value='box'
                             checked={person.completed}
                             onChange={(event) => this.checkComplete(event, person.id)}
                         />
-          <input onChange={(event) => this.updatePerson(event, person.id)} value={person.updateInput} />
-          <button type='Success' onClick={(event) => this.updateHandler(event, person.id)}>Update</button>
         </div>
       )
     }) :<Spinner />
 
     return (
       <div className="App">
+      <h3> Work ToDO </h3>
+      < div style ={{margin: 30}}>
         <input onChange={(event) => this.addPerson(event, i)} value={this.state.addInput}/>
         <button onClick={this.addItem} > Add </button>
+        </div>
         {persons}
 
       </div>
